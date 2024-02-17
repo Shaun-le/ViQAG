@@ -143,6 +143,7 @@ def main():
             assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
             with open(_file, 'w') as f:
                 f.write('\n'.join(prediction))
+            with open(f'{_file}_ref', 'w') as f:
+                f.write('\n'.join(gold_reference))
 
-    with open(metric_file, "w") as f:
-        json.dump(output, f)
+main()
