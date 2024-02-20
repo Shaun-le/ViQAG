@@ -10,10 +10,10 @@ def train(
         input_types: List or str = ['paragraph_answer', 'paragraph_sentence'],
         output_types: List or str = ['question', 'answer'],
         prefix_types: List or str = ['qg','ae'],
-        model: str = "VietAI/vit5-base",
+        model: str = " ",
         max_length: int = 512,
         max_length_output: int = 256,
-        epoch: int = 2,
+        epoch: int = 10,
         batch: int = 4,
         lr: float = 1e-4,
         fp16: bool = False,
@@ -56,7 +56,7 @@ def train(
         )
     assert (
         model
-    ), "Please specify a --model, e.g. --model='vinai/bartpho-syllable-base'"
+    ), "Please specify a --model, e.g. --model='VietAI/vit5-base'"
     trainer = Trainer(
         checkpoint_dir = checkpoint_dir,
         dataset_path = dataset_path,

@@ -1,149 +1,165 @@
-""" Evaluate Multitask QAG Model with QAG metric (eg. QA Aligned F1). """
+""" Evaluate Multitask QAG Model with QAG metric. """
 import json
 import logging
-import argparse
 import os
 from itertools import chain
 from datasets import load_dataset
 from ..language_model import TransformersQG
-from ..spacy_module import SpacyPipeline
-from ..automatic_evaluation import LANG_NEED_TOKENIZATION
+import nltk
+nltk.download("wordnet")
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 
-def get_options():
-    parser = argparse.ArgumentParser(description='QAG evaluation.')
-    parser.add_argument('-m', '--model', default=None, type=str)
-    parser.add_argument('--model-ae', default=None, type=str)
-    parser.add_argument('--max-length', default=512, type=int, help='')
-    parser.add_argument('--max-length-output', default=256, type=int, help='')
-    parser.add_argument('-d', '--dataset-path', help='huggingface datasets alias', default='lmqg/qg-example', type=str)
-    parser.add_argument('--dataset-name', help='huggingface datasets name', default='default', type=str)
-    parser.add_argument('--test-split', help='the name of test split', default='test', type=str)
-    parser.add_argument('--validation-split', help='the name of validation split', default='validation', type=str)
-    parser.add_argument('--n-beams', default=4, type=int)
-    parser.add_argument('--batch-size', default=16, type=int)
-    parser.add_argument('-l', '--language', help='', default='en', type=str)
-    parser.add_argument('--use-auth-token', help='', action='store_true')
-    parser.add_argument('--device-map', help='', default=None, type=str)
-    parser.add_argument('--low-cpu-mem-usage', help='', action='store_true')
-    parser.add_argument('-e', '--export-dir', required=True, type=str)
-    parser.add_argument('--hyp-test', default=None, type=str)
-    parser.add_argument('--hyp-dev', default=None, type=str)
-    parser.add_argument('--overwrite-prediction', help='', action='store_true')
-    parser.add_argument('--overwrite-metric', help='', action='store_true')
-    parser.add_argument('--use-reference-answer', action='store_true')
-    parser.add_argument('--is-qa', help='', action='store_true')
-    parser.add_argument('--is-ae', help='', action='store_true')
-    parser.add_argument('--is-qag', help='', action='store_true')
-    return parser.parse_args()
+class Evaluation:
+    def __init__(self,
+                 model: str = 'VietAI/vit5-base',
+                 model_ae: str = None,
+                 max_length: int = 512,
+                 max_length_output: int = 256,
+                 dataset_path: str = 'shnl/qg-example',
+                 dataset_name: str = '',
+                 test_split: str = 'test',
+                 validation_split: str = 'validation',
+                 n_beams: int = 8,
+                 batch_size: int = 4,
+                 language: str = 'vi',
+                 use_auth_token: bool = True,
+                 device_map: str = None,
+                 low_cpu_mem_usage: bool = False,
+                 export_dir: str = './result',
+                 hyp_test: str = None,
+                 hyp_dev: str = None,
+                 overwrite_prediction: bool = True,
+                 overwrite_metric: bool = True,
+                 is_qg: bool = None,
+                 is_ae: bool = None,
+                 is_qag: bool = True,
+                 use_reference_answer: bool = False):
+        logging.info('QAG evaluation.')
+        self.model = model
+        self.model_ae = model_ae
+        self.max_length = max_length
+        self.max_length_output = max_length_output
+        self.dataset_path = dataset_path
+        self.dataset_name = dataset_name
+        self.test_split = test_split
+        self.validation_split = validation_split
+        self.n_beams = n_beams
+        self.batch_size = batch_size
+        self.language = language
+        self.use_auth_token = use_auth_token
+        self.device_map = device_map
+        self.low_cpu_mem_usage = low_cpu_mem_usage
+        self.export_dir = export_dir
+        self.hyp_test = hyp_test
+        self.hyp_dev = hyp_dev
+        self.overwrite_prediction = overwrite_prediction
+        self.overwrite_metric = overwrite_metric
+        self.is_qg = is_qg
+        self.is_ae = is_ae
+        self.is_qag = is_qag
+        self.use_reference_answer = use_reference_answer
 
-
-def main():
-    opt = get_options()
-    os.makedirs(opt.export_dir, exist_ok=True)
-
-    def load_model():
-        if opt.model is not None:
-            _model = TransformersQG(opt.model,
-                                    is_ae=None if opt.is_ae else True,
-                                    is_qg=None if opt.is_qg else True,
-                                    is_qag=None if opt.is_qag else True,
-                                    model_ae=opt.model_ae,
+    def load_model(self):
+        os.makedirs(self.export_dir, exist_ok=True)
+        if self.model is not None:
+            _model = TransformersQG(self.model,
+                                    is_ae=None if self.is_ae else True,
+                                    is_qg=None if self.is_qg else True,
+                                    is_qag=None if self.is_qag else True,
+                                    model_ae=self.model_ae,
                                     skip_overflow_error=True,
                                     drop_answer_error_text=True,
-                                    language=opt.language,
-                                    max_length=opt.max_length,
-                                    max_length_output=opt.max_length_output,
-                                    use_auth_token=opt.use_auth_token,
-                                    device_map=opt.device_map,
-                                    low_cpu_mem_usage=opt.low_cpu_mem_usage)
+                                    language=self.language,
+                                    max_length=self.max_length,
+                                    max_length_output=self.max_length_output)
             _model.eval()
             return _model
-        raise ValueError(f"require `-m` or `--model`")
+        raise ValueError("require `-m` or `--model`")
 
-    if opt.model_ae is not None:
-        metric_file = f"{opt.export_dir}/metric.first.answer.paragraph.questions_answers." \
-                      f"{opt.dataset_path.replace('/', '_')}.{opt.dataset_name}." \
-                      f"{opt.model_ae.replace('/', '_')}.json"
-    else:
-        metric_file = f"{opt.export_dir}/metric.first.answer.paragraph.questions_answers." \
-                      f"{opt.dataset_path.replace('/', '_')}.{opt.dataset_name}.json"
-    if os.path.exists(metric_file):
-        with open(metric_file) as f:
-            output = json.load(f)
-    else:
-        output = {}
-    spacy_model = SpacyPipeline(language=opt.language) if opt.language in LANG_NEED_TOKENIZATION else None
-    for _split, _file in zip([opt.test_split, opt.validation_split], [opt.hyp_test, opt.hyp_dev]):
-        if _file is None:
-            if opt.model_ae is not None:
-                _file = f"{opt.export_dir}/samples.{_split}.hyp.paragraph.questions_answers." \
-                        f"{opt.dataset_path.replace('/', '_')}.{opt.dataset_name}." \
-                        f"{opt.model_ae.replace('/', '_')}.txt"
-            else:
-                _file = f"{opt.export_dir}/samples.{_split}.hyp.paragraph.questions_answers." \
-                        f"{opt.dataset_path.replace('/', '_')}.{opt.dataset_name}.txt"
+    def evaluation(self):
+        if self.model_ae is not None:
+            metric_file = f"{self.export_dir}/metric.first.answer.paragraph.questions_answers." \
+                          f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}." \
+                          f"{self.model_ae.replace('/', '_')}.json"
+        else:
+            metric_file = f"{self.export_dir}/metric.first.answer.paragraph.questions_answers." \
+                          f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}.json"
+        if os.path.exists(metric_file):
+            with open(metric_file) as f:
+                output = json.load(f)
+        else:
+            output = {}
+        for _split, _file in zip([self.test_split, self.validation_split], [self.hyp_test, self.hyp_dev]):
+            if _file is None:
+                if self.model_ae is not None:
+                    _file = f"{self.export_dir}/samples.{_split}.hyp.paragraph.questions_answers." \
+                            f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}." \
+                            f"{self.model_ae.replace('/', '_')}.txt"
+                else:
+                    _file = f"{self.export_dir}/samples.{_split}.hyp.paragraph.questions_answers." \
+                            f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}.txt"
 
-        logging.info(f'generate qa for split {_split}')
-        if _split not in output:
-            output[_split] = {}
+            logging.info(f'generate qa for split {_split}')
+            if _split not in output:
+                output[_split] = {}
 
-        dataset = load_dataset(opt.dataset_path, None if opt.dataset_name == 'default' else opt.dataset_name,
-                               split=_split, use_auth_token=opt.use_auth_token)
-        df = dataset.to_pandas()
+            dataset = load_dataset(self.dataset_path, None if self.dataset_name == 'default' else self.dataset_name,
+                                   split=_split, use_auth_token=True)
+            df = dataset.to_pandas()
 
-        # formatting data into qag format
-        model_input = []
-        gold_reference = []
-        model_highlight = []
-        for paragraph, g in df.groupby("paragraph"):
-            model_input.append(paragraph)
-            model_highlight.append(g['answer'].tolist())
-            gold_reference.append(' | '.join([
-                f"question: {i['question']}, answer: {i['answer']}" for _, i in g.iterrows()
-            ]))
-        prediction = None
-        if not opt.overwrite_prediction and os.path.exists(_file):
-            with open(_file) as f:
-                _prediction = f.read().split('\n')
-            if len(_prediction) != len(gold_reference):
-                logging.warning(f"found prediction file at {_file} but length not match "
-                                f"({len(_prediction)} != {len(gold_reference)})")
-            else:
-                prediction = _prediction
-        if prediction is None:
-            model = load_model()
-            # model prediction
-            if not opt.use_reference_answer:
-                logging.info("model prediction: (qag model)")
-                prediction = model.generate_qa(
-                    list_context=model_input,
-                    num_beams=opt.n_beams,
-                    batch_size=opt.batch_size)
-            else:
-                logging.info("model prediction: (qg model, answer fixed by reference)")
-                model_input_flat = list(chain(*[[i] * len(h) for i, h in zip(model_input, model_highlight)]))
-                model_highlight_flat = list(chain(*model_highlight))
-                prediction_flat = model.generate_q(
-                    list_context=model_input_flat,
-                    list_answer=model_highlight_flat,
-                    num_beams=opt.n_beams,
-                    batch_size=opt.batch_size)
-                _index = 0
-                prediction = []
-                for h in model_highlight:
-                    questions = prediction_flat[_index:_index+len(h)]
-                    answers = model_highlight_flat[_index:_index+len(h)]
-                    prediction.append(list(zip(questions, answers)))
-                    _index += len(h)
+            # formatting data into qag format
+            model_input = []
+            gold_reference = []
+            model_highlight = []
+            for paragraph, g in df.groupby("paragraph"):
+                model_input.append(paragraph)
+                model_highlight.append(g['answer'].tolist())
+                gold_reference.append(' | '.join([
+                    f"question: {i['question']}, answer: {i['answer']}" for _, i in g.iterrows()
+                ]))
+            prediction = None
+            if not self.overwrite_prediction and os.path.exists(_file):
+                with open(_file) as f:
+                    _prediction = f.read().split('\n')
+                if len(_prediction) != len(gold_reference):
+                    logging.warning(f"found prediction file at {_file} but length not match "
+                                    f"({len(_prediction)} != {len(gold_reference)})")
+                else:
+                    prediction = _prediction
+            if prediction is None:
+                model = self.load_model()
+                # model prediction
+                if not self.use_reference_answer:
+                    logging.info("model prediction: (qag model)")
+                    prediction = model.generate_qa(
+                        list_context=model_input,
+                        num_beams=self.n_beams,
+                        batch_size=self.batch_size)
+                else:
+                    logging.info("model prediction: (qg model, answer fixed by reference)")
+                    model_input_flat = list(chain(*[[i] * len(h) for i, h in zip(model_input, model_highlight)]))
+                    model_highlight_flat = list(chain(*model_highlight))
+                    prediction_flat = model.generate_q(
+                        list_context=model_input_flat,
+                        list_answer=model_highlight_flat,
+                        num_beams=self.n_beams,
+                        batch_size=self.batch_size)
+                    _index = 0
+                    prediction = []
+                    for h in model_highlight:
+                        questions = prediction_flat[_index:_index+len(h)]
+                        answers = model_highlight_flat[_index:_index+len(h)]
+                        prediction.append(list(zip(questions, answers)))
+                        _index += len(h)
 
-            # formatting prediction
-            prediction = [' | '.join([f"question: {q}, answer: {a}" for q, a in p]) if p is not None else "" for p in prediction]
-            assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
-            with open(_file, 'w') as f:
-                f.write('\n'.join(prediction))
-            with open(f'{_file}_ref', 'w') as f:
-                f.write('\n'.join(gold_reference))
+                # formatting prediction
+                prediction = [' | '.join([f"question: {q}, answer: {a}" for q, a in p]) if p is not None else "" for p in prediction]
+                assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
 
-main()
+
+
+                with open(_file, 'w') as f:
+                    f.write('\n'.join(prediction))
+                with open(f'{_file}_ref.txt', 'w') as f:
+                    f.write('\n'.join(gold_reference))
