@@ -1,6 +1,7 @@
 from plms.evaluation.model_evaluation_qag import Evaluation
+import fire
 def evaluate(
-    model: str = '',
+    model: str = 'VietAI/vit5-base',
     model_ae: str = None,
     max_length: int = 512,
     max_length_output: int = 256,
@@ -52,3 +53,7 @@ def evaluate(
         is_qag = is_qag,
         use_reference_answer = use_reference_answer
     )
+    eval.evaluation()
+
+if __name__ == "__main__":
+    fire.Fire(evaluate)

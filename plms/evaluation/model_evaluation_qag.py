@@ -1,14 +1,81 @@
-""" Evaluate Multitask QAG Model with QAG metric. """
 import json
 import logging
 import os
+import re
+import evaluate
+from datasets import load_metric
+import numpy as np
 from itertools import chain
 from datasets import load_dataset
 from ..language_model import TransformersQG
 import nltk
 nltk.download("wordnet")
+from nltk.translate.bleu_score import sentence_bleu
+import spacy
+
+nlp = spacy.load('vi_core_news_lg')
+
+def bleu(predict, goal):
+    bleu_scores = {1: [], 2: [], 3: [], 4: []}
+
+    for sent1, sent2 in zip(predict, goal):
+        sent1_doc = nlp(sent1)
+        sent2_doc = nlp(sent2)
+        ws = [(1, 0, 0, 0), (0.5, 0.5, 0, 0), (0.33, 0.33, 0.33, 0), (0.25, 0.25, 0.25, 0.25)]
+        for n in range(1, 5):
+            weights = ws[n-1]
+            sent1_tokens = [token.text for token in sent1_doc]
+            sent2_tokens = [token.text for token in sent2_doc]
+            bleu_score = sentence_bleu([sent1_tokens], sent2_tokens, weights=weights)
+            bleu_scores[n].append(bleu_score)
+    result = {}
+    for n in range(1, 5):
+        avg_bleu_score = (sum(bleu_scores[n]) / len(bleu_scores[n]))*100
+        result["BLEU{}".format(n)] = avg_bleu_score
+    return result
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+
+def jaccard_sim(
+    docA: set[str],
+    docB: list[set[str]]
+):
+    return [len(docA & e) / len(docA | e) for e in docB]
+
+def read_json(path: str):
+    with open(path, 'r') as f:
+        return json.load(f)
+
+def post_process(refs_or_preds: list[str]):
+    n_errors: int = 0
+    total: int = 0
+
+    results: list[str, list[str]] = {'question': [], 'answer': []}
+    for e in refs_or_preds:
+        pairs: list[str] = [i.strip() for i in re.split('[^\S\n\t]?\[SEP\][^\S\n\t]?', e) if i.strip()]
+        questions = []
+        answers = []
+        for qa in pairs:
+            total += 1
+            if qa.startswith('question: '):
+                qa = qa.removeprefix('question: ')
+                if ', answer: ' in qa:
+                    q, *a = qa.split(', answer: ')
+                    questions.append(q.strip())
+                    answers.append(a[0].strip())
+                else:
+                    n_errors += 1
+            else:
+                n_errors += 1
+
+        results['question'].append(questions)
+        results['answer'].append(answers)
+
+    results['qa'] = [[q + ' ' + a for q, a in zip(qas, ans)] for qas, ans in
+                     zip(results['question'], results['answer'])]
+    print('% error: ', round(n_errors / total * 100, 4))
+
+    return results
 
 class Evaluation:
     def __init__(self,
@@ -157,9 +224,54 @@ class Evaluation:
                 prediction = [' | '.join([f"question: {q}, answer: {a}" for q, a in p]) if p is not None else "" for p in prediction]
                 assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
 
+                meteor_metrics = evaluate.load('meteor')
+                bert_score = evaluate.load('bertscore')
 
+                refs = post_process(gold_reference)
+                preds = post_process(prediction)
+
+                preds_aligned = []
+                for ref, pred in zip(refs['qa'], preds['qa']):
+                    if len(pred) < len(ref):
+                        preds_aligned.append(pred)
+                        continue
+
+                    tmp = []
+                    pred_tmp = pred.copy()
+                    e = [set(sent.lower().split(' ')) for sent in ref]
+                    e1 = [set(sent.lower().split(' ')) for sent in pred]
+                    for s in e:
+                        scores = jaccard_sim(s, e1)
+                        chosen_idx = np.argmax(scores)
+                        s1 = pred_tmp.pop(chosen_idx)
+                        e1.pop(chosen_idx)
+
+                        tmp.append(s1)
+                    preds_aligned.append(tmp)
+
+                final_refs = [' '.join(e) for e in refs['qa']]
+                final_preds = [' '.join(e) for e in preds_aligned]
+
+                bleu_result = bleu(final_preds, final_refs)
+
+                metrics = load_metric('rouge')
+                rouge_result = {k: (v.mid.fmeasure) * 100 for k, v in metrics.compute(predictions=final_preds, references=final_refs).items()}
+
+                bert = bert_score.compute(predictions=final_preds, references=final_refs, lang=self.language)
+                bert_result = np.array(bert['f1']).mean()
+
+                meteor_result = meteor_metrics.compute(predictions=final_preds, references=final_refs)
+
+                evaluation_result = {
+                    "BLEU": bleu_result,
+                    "ROUGE": rouge_result,
+                    "BERT": bert_result,
+                    "METEOR": meteor_result
+                }
 
                 with open(_file, 'w') as f:
                     f.write('\n'.join(prediction))
                 with open(f'{_file}_ref.txt', 'w') as f:
                     f.write('\n'.join(gold_reference))
+                with open(f'{_file}.json', 'w') as f:
+                    json.dump(evaluation_result, f)
