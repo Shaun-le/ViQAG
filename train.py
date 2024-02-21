@@ -5,12 +5,12 @@ import os
 
 def train(
         checkpoint_dir: str = './cp',
-        dataset_path: str = "shnl/qg-example",
+        dataset_path: str = 'shnl/qg-example',
         dataset_name: str = 'default',
         input_types: List or str = ['paragraph_answer', 'paragraph_sentence'],
         output_types: List or str = ['question', 'answer'],
         prefix_types: List or str = ['qg','ae'],
-        model: str = " ",
+        model: str = '',
         max_length: int = 512,
         max_length_output: int = 256,
         epoch: int = 10,

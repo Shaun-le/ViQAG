@@ -182,7 +182,7 @@ class Evaluation:
             for paragraph, g in df.groupby("paragraph"):
                 model_input.append(paragraph)
                 model_highlight.append(g['answer'].tolist())
-                gold_reference.append(' | '.join([
+                gold_reference.append(' [SEP] '.join([
                     f"question: {i['question']}, answer: {i['answer']}" for _, i in g.iterrows()
                 ]))
             prediction = None
@@ -221,7 +221,7 @@ class Evaluation:
                         _index += len(h)
 
                 # formatting prediction
-                prediction = [' | '.join([f"question: {q}, answer: {a}" for q, a in p]) if p is not None else "" for p in prediction]
+                prediction = [' [SEP] '.join([f"question: {q}, answer: {a}" for q, a in p]) if p is not None else "" for p in prediction]
                 assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
 
                 meteor_metrics = evaluate.load('meteor')
