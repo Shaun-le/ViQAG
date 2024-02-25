@@ -1,59 +1,51 @@
-from plms.evaluation.model_evaluation_qag import Evaluation
-import fire
-def evaluate(
-    model: str = 'VietAI/vit5-base',
-    model_ae: str = None,
-    max_length: int = 512,
-    max_length_output: int = 256,
-    dataset_path: str = 'shnl/qg-example',
-    dataset_name: str = '',
-    test_split: str = 'test',
-    validation_split: str = 'validation',
-    n_beams: int = 8,
-    batch_size: int = 4,
-    language: str = 'vi',
-    use_auth_token: bool = True,
-    device_map: str = None,
-    low_cpu_mem_usage: bool = False,
-    export_dir: str = './result',
-    hyp_test: str = None,
-    hyp_dev: str = None,
-    overwrite_prediction: bool = True,
-    overwrite_metric: bool = True,
-    is_qg: bool = None,
-    is_ae: bool = None,
-    is_qag: bool = True,
-    use_reference_answer: bool = False
-):
-    assert (
-        model
-    ), "Please specify your model, default. --model='VietAI/vit5-base'"
-    eval = Evaluation(
-        model = model,
-        model_ae = model_ae,
-        max_length = max_length,
-        max_length_output = max_length_output,
-        dataset_path = dataset_path,
-        dataset_name = dataset_name,
-        test_split = test_split,
-        validation_split = validation_split,
-        n_beams = n_beams,
-        batch_size = batch_size,
-        language = language,
-        use_auth_token = use_auth_token,
-        device_map = device_map,
-        low_cpu_mem_usage = low_cpu_mem_usage,
-        export_dir = export_dir,
-        hyp_test = hyp_test,
-        hyp_dev = hyp_dev,
-        overwrite_prediction = overwrite_prediction,
-        overwrite_metric = overwrite_metric,
-        is_qg = is_qg,
-        is_ae = is_ae,
-        is_qag = is_qag,
-        use_reference_answer = use_reference_answer
-    )
-    eval.evaluation()
+import nltk
+nltk.download("wordnet")
+import pandas as pd
+import numpy as np
+from utils import jaccard_sim, post_process
+from utils import bleu, rouge, meteor, bert_score
+class Evaluate:
+    def __init__(self,
+                 result_file: str = ''):
+        self.result_file = result_file
+    def compute_metrics(self):
+        df = pd.read_csv(self.result_file)
+        predictions, references = [], []
+        for i in range(len(df)):
+            predictions.append(df['prediction'][i])
+            references.append(df['reference'][i])
+        refs = post_process(references)
+        preds = post_process(predictions)
 
-if __name__ == "__main__":
-    fire.Fire(evaluate)
+        preds_aligned = []
+        for ref, pred in zip(refs['qa'], preds['qa']):
+            if len(pred) < len(ref):
+                preds_aligned.append(pred)
+                continue
+
+            tmp = []
+            pred_tmp = pred.copy()
+            e = [set(sent.lower().split(' ')) for sent in ref]
+            e1 = [set(sent.lower().split(' ')) for sent in pred]
+            for s in e:
+                scores = jaccard_sim(s, e1)
+                chosen_idx = np.argmax(scores)
+                s1 = pred_tmp.pop(chosen_idx)
+                e1.pop(chosen_idx)
+
+                tmp.append(s1)
+            preds_aligned.append(tmp)
+
+        final_refs = [' '.join(e) for e in refs['qa']]
+        final_preds = [' '.join(e) for e in preds_aligned]
+
+        bleu = bleu(final_preds, final_refs)
+        rouge = rouge(final_preds, final_refs)
+        meteor = meteor(final_preds, final_refs)
+        bert = bert_score(final_preds, final_refs)
+
+        result = {'BLEU SCORE: ', bleu,
+                  'ROUGE SCORE: ', rouge,
+                  'METEOR SCORE: ', meteor,
+                  'BERT SCORE: ', bert}
+        return result

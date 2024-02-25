@@ -3,7 +3,7 @@ import fire
 from typing import List
 import os
 
-def train(
+def fine_tuning(
         checkpoint_dir: str = './cp',
         dataset_path: str = 'shnl/qg-example',
         dataset_name: str = 'default',
@@ -83,5 +83,11 @@ def train(
     )
     trainer.train()
 
+def inst_tuning():
+    return 'cumming soon'
+
+def alpaca():
+    return 'cumming soon'
+
 if __name__ == "__main__":
-    fire.Fire(train)
+    fire.Fire(fine_tuning)
