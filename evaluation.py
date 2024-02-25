@@ -48,4 +48,5 @@ class Evaluate:
                   'ROUGE SCORE: ', rouge,
                   'METEOR SCORE: ', meteor,
                   'BERT SCORE: ', bert}
+        print(result)
         return result
