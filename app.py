@@ -11,7 +11,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-os.environ['HUGGINGFACEHUB_API_TOKEN'] = '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'
+os.environ['HUGGINGFACEHUB_API_TOKEN'] = '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'
 
 model_map = {
     'pipelinevit5': ['namngo/pipeline_vit5_ae','namngo/pipeline_vit5_qg'],
