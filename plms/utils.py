@@ -55,7 +55,7 @@ def post_process(refs_or_preds: list[str]):
 class MetricsCalculator:
     def __init__(self):
         self.nlp = spacy.load('vi_core_news_lg')
-        self.rouge_metrics = evaluate.load('rouge')
+        self.rouge_metrics = load_metric('rouge')
         self.meteor_metrics = evaluate.load('meteor')
         self.bert_score = evaluate.load('bertscore')
 
@@ -87,7 +87,7 @@ class MetricsCalculator:
         result = self.meteor_metrics.compute(predictions=predict, references=goal)
         return result
 
-    def bert_score(self, predict, goal):
-        bert = self.bert_score(predictions=predict, references=goal, lang='vi')
-        result = np.array(bert['f1']).mean()
+    def bert(self, predict, goal):
+        score = self.bert_score.compute(predictions=predict, references=goal, lang='vi')
+        result = np.array(score['f1']).mean()
         return result

@@ -6,7 +6,6 @@ import urllib
 from itertools import chain
 from typing import List, Dict
 from multiprocessing import Pool
-
 import numpy as np
 from tqdm import tqdm
 import torch
@@ -170,7 +169,7 @@ class EncodePlus:
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.max_length_output = max_length_output
-        # NOTE: for model training, we should drop the exceeded input but not for the evaluation
+        # NOTE: for model training, we should drop the exceeded input but not for the evaluator
         self.drop_overflow_error_text = drop_overflow_error_text
         self.skip_overflow_error = skip_overflow_error
         self.drop_highlight_error_text = drop_highlight_error_text

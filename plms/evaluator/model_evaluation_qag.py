@@ -3,8 +3,6 @@ import logging
 import os
 from itertools import chain
 from datasets import load_dataset
-from ..language_model import TransformersQG
-from utils import save_result
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 class Evaluation:
@@ -60,6 +58,7 @@ class Evaluation:
     def load_model(self):
         os.makedirs(self.export_dir, exist_ok=True)
         if self.model is not None:
+            from plms.language_model import TransformersQG
             _model = TransformersQG(self.model,
                                     is_ae=None if self.is_ae else True,
                                     is_qg=None if self.is_qg else True,
@@ -155,5 +154,6 @@ class Evaluation:
                               if p is not None else "" for p in prediction]
                 assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
                 for i in range(len(prediction)):
+                    from plms.utils import save_result
                     save_result(path=f'{self.export_dir}/{_file}.txt',
                                 result={'prediction': prediction[i], 'reference': gold_reference[i]})

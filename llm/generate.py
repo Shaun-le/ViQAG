@@ -1,11 +1,8 @@
-import os
-import json
 import torch
 import pandas as pd
-from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM
 from transformers import AutoTokenizer
-from utils import save_result
+from plms.utils import save_result
 
 # load base LLM model and tokenizer
 model_checkpoint = '/home/int2-user/qag/checkpoint-13B/checkpoint-10000'

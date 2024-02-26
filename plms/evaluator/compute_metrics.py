@@ -1,9 +1,8 @@
 import nltk
+from utils import post_process, jaccard_sim, MetricsCalculator
 nltk.download("wordnet")
 import pandas as pd
 import numpy as np
-from utils import jaccard_sim, post_process, MetricsCalculator
-import json
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -44,14 +43,14 @@ class Evaluate:
 
         metrics_calculator = MetricsCalculator()
 
-        b = metrics_calculator.bleu(final_preds, final_refs)
-        r = metrics_calculator.rouge(final_preds, final_refs)
-        m = metrics_calculator.meteor(final_preds, final_refs)
-        bert = metrics_calculator.bert_score(final_preds, final_refs)
+        bleu = metrics_calculator.bleu(final_preds, final_refs)
+        rouge = metrics_calculator.rouge(final_preds, final_refs)
+        meteor = metrics_calculator.meteor(final_preds, final_refs)
+        bert_score = metrics_calculator.bert(final_preds, final_refs)
 
-        result = {'BLEU SCORE': b,
-                  'ROUGE SCORE': r,
-                  'METEOR SCORE': m,
-                  'BERT SCORE': bert}
+        result = {'BLEU SCORE': bleu,
+                  'ROUGE SCORE': rouge,
+                  'METEOR SCORE': meteor,
+                  'BERT SCORE': bert_score}
 
         return result
