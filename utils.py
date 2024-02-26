@@ -8,10 +8,6 @@ import evaluate
 import numpy as np
 from datasets import load_metric
 
-nlp = spacy.load('vi_core_news_lg')
-rouge_metrics = evaluate.load('rouge')
-meteor_metrics = evaluate.load('meteor')
-bert_score = evaluate.load('bertscore')
 def save_result(path: str, result: dict[str, str]):
     file_mode = 'a' if os.path.exists(path) else 'w'
     with open(path, file_mode) as file:
@@ -56,35 +52,42 @@ def post_process(refs_or_preds: list[str]):
 
     return results
 
-def bleu(predict, goal):
-    bleu_scores = {1: [], 2: [], 3: [], 4: []}
+class MetricsCalculator:
+    def __init__(self):
+        self.nlp = spacy.load('vi_core_news_lg')
+        self.rouge_metrics = evaluate.load('rouge')
+        self.meteor_metrics = evaluate.load('meteor')
+        self.bert_score = evaluate.load('bertscore')
 
-    for sent1, sent2 in zip(predict, goal):
-        sent1_doc = nlp(sent1)
-        sent2_doc = nlp(sent2)
-        ws = [(1, 0, 0, 0), (0.5, 0.5, 0, 0), (0.33, 0.33, 0.33, 0), (0.25, 0.25, 0.25, 0.25)]
+    def bleu(self, predict, goal):
+        bleu_scores = {1: [], 2: [], 3: [], 4: []}
+
+        for sent1, sent2 in zip(predict, goal):
+            sent1_doc = self.nlp(sent1)
+            sent2_doc = self.nlp(sent2)
+            ws = [(1, 0, 0, 0), (0.5, 0.5, 0, 0), (0.33, 0.33, 0.33, 0), (0.25, 0.25, 0.25, 0.25)]
+            for n in range(1, 5):
+                weights = ws[n-1]
+                sent1_tokens = [token.text for token in sent1_doc]
+                sent2_tokens = [token.text for token in sent2_doc]
+                bleu_score = sentence_bleu([sent1_tokens], sent2_tokens, weights=weights)
+                bleu_scores[n].append(bleu_score)
+        result = {}
         for n in range(1, 5):
-            weights = ws[n-1]
-            sent1_tokens = [token.text for token in sent1_doc]
-            sent2_tokens = [token.text for token in sent2_doc]
-            bleu_score = sentence_bleu([sent1_tokens], sent2_tokens, weights=weights)
-            bleu_scores[n].append(bleu_score)
-    result = {}
-    for n in range(1, 5):
-        avg_bleu_score = (sum(bleu_scores[n]) / len(bleu_scores[n]))*100
-        result["BLEU{}".format(n)] = (sum(bleu_scores[n]) / len(bleu_scores[n]))*100
-    return result
+            avg_bleu_score = (sum(bleu_scores[n]) / len(bleu_scores[n]))*100
+            result["BLEU{}".format(n)] = (sum(bleu_scores[n]) / len(bleu_scores[n]))*100
+        return result
 
-def rouge(predict, goal):
-    result = [{k: (v.mid.fmeasure) * 100} for k, v in
-               rouge_metrics.compute(predictions=predict, references=goal).items()]
-    return result
+    def rouge(self, predict, goal):
+        result = [{k: (v.mid.fmeasure) * 100} for k, v in
+                   self.rouge_metrics.compute(predictions=predict, references=goal).items()]
+        return result
 
-def meteor(predict, goal):
-    result = meteor_metrics.compute(predictions=predict, references=goal)
-    return result
+    def meteor(self, predict, goal):
+        result = self.meteor_metrics.compute(predictions=predict, references=goal)
+        return result
 
-def bert_score(predict, goal):
-    bert = bert_score.compute(predictions=predict, references=goal, lang='vi')
-    result = np.array(bert['f1']).mean()
-    return result
+    def bert_score(self, predict, goal):
+        bert = self.bert_score(predictions=predict, references=goal, lang='vi')
+        result = np.array(bert['f1']).mean()
+        return result

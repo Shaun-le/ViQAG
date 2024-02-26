@@ -32,7 +32,7 @@ class Evaluation:
                  is_ae: bool = None,
                  is_qag: bool = True,
                  use_reference_answer: bool = False):
-        logging.info('QAG evaluation.')
+        logging.info('QAG evaluator.')
         self.model = model
         self.model_ae = model_ae
         self.max_length = max_length
@@ -90,12 +90,12 @@ class Evaluation:
         for _split, _file in zip([self.test_split, self.validation_split], [self.hyp_test, self.hyp_dev]):
             if _file is None:
                 if self.model_ae is not None:
-                    _file = f"{self.export_dir}/samples.{_split}.hyp.paragraph.questions_answers." \
+                    _file = f"{self.export_dir}/samples.{_split}.questions_answers." \
                             f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}." \
-                            f"{self.model_ae.replace('/', '_')}.txt"
+                            f"{self.model_ae.replace('/', '_')}"
                 else:
-                    _file = f"{self.export_dir}/samples.{_split}.hyp.paragraph.questions_answers." \
-                            f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}.txt"
+                    _file = f"{self.export_dir}/samples.{_split}.questions_answers." \
+                            f"{self.dataset_path.replace('/', '_')}.{self.dataset_name}"
 
             logging.info(f'generate qa for split {_split}')
             if _split not in output:
@@ -155,5 +155,5 @@ class Evaluation:
                               if p is not None else "" for p in prediction]
                 assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
                 for i in range(len(prediction)):
-                    save_result(path=self.export_dir,
+                    save_result(path=f'{self.export_dir}/{_file}.txt',
                                 result={'prediction': prediction[i], 'reference': gold_reference[i]})
