@@ -1,6 +1,6 @@
 import fire
-from evaluator.model_evaluation_qag import Evaluation
-from evaluator.compute_metrics import Evaluate
+from model_evaluation_qag import Evaluation
+from compute_metrics import Evaluate
 
 
 class QAGenerationEvaluation:
