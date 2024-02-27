@@ -5,9 +5,8 @@ Question-answer generation is formulated as a text-generation task by using PLMs
   <p align="center">
     <img src="assets/overview_system.png" alt="The system overview of fine-tuning and instruction fine-tuning QAG.">
   </p>
-  <figcaption align="center">Fig 1: The system overview of fine-tuning and instruction fine-tuning QAG.</figcaption>
+  <p align="center"><strong>Fig.1: The system overview of fine-tuning and instruction fine-tuning QAG.</strong></p>
 </figure>
-
 
 ## Data
 prepare your data following the format below and run ..., ... or ...
