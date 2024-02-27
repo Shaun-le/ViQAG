@@ -53,4 +53,5 @@ class Evaluate:
                   'METEOR SCORE': meteor,
                   'BERT SCORE': bert_score}
 
-        return result
+        for key, value in result.items():
+            print(key, ':', value)
