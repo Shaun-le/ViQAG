@@ -1,8 +1,6 @@
 import fire
-from model_evaluation_qag import Evaluation
-from compute_metrics import Evaluate
-
-
+from plms.model_evaluation_qag import Evaluation
+from plms.compute_metrics import Evaluate
 class QAGenerationEvaluation:
     def generate(
         self,

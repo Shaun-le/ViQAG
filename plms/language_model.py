@@ -11,8 +11,8 @@ from tqdm import tqdm
 import torch
 from torch.nn import functional
 import transformers
-from exceptions import ExceedMaxLengthError, HighlightNotFoundError, AnswerNotFoundError
-from spacy_module import SpacyPipeline, VALID_METHODS
+from .exceptions import ExceedMaxLengthError, HighlightNotFoundError, AnswerNotFoundError
+from .spacy_module import SpacyPipeline, VALID_METHODS
 
 __all__ = ('TransformersQG', 'ADDITIONAL_SP_TOKENS', 'TASK_PREFIX', 'clean', 'internet_connection')
 

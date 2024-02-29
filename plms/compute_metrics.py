@@ -1,5 +1,5 @@
 import nltk
-from utils import post_process, jaccard_sim, MetricsCalculator
+from .utils import post_process, jaccard_sim, MetricsCalculator
 nltk.download("wordnet")
 import pandas as pd
 import numpy as np

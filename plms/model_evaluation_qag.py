@@ -3,8 +3,8 @@ import logging
 import os
 from itertools import chain
 from datasets import load_dataset
-from language_model import TransformersQG
-from utils import save_result
+from .language_model import TransformersQG
+from .utils import save_result
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 class Evaluation:
