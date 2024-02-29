@@ -8,6 +8,7 @@ from os.path import join as pj
 from glob import glob
 from typing import List
 import torch
+from tqdm import tqdm
 
 from .language_model import TransformersQG
 from .data import get_dataset, DEFAULT_CACHE_DIR
@@ -225,7 +226,7 @@ class Trainer:
         global_step = 0
         saved_checkpoints = []
         with torch.cuda.amp.autocast(enabled=self.config.fp16):
-            for e in range(self.current_epoch, self.config.epoch):  # loop over the epoch
+            for e in tqdm(range(self.current_epoch, self.config.epoch)):  # loop over the epoch
 
                 # # free the cache
                 # gc.collect()
