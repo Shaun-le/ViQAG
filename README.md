@@ -69,14 +69,25 @@ print(pred)
 
 ### Data
 Please prepare your data in the `jsonl` format like our provided sample datasets, we'll take care of the rest, just execute the following command:
+
+For Pipeline and Multitask:
 ```
-comming soon
+python qg.py process_data --input_dir 'input dir' --output_dir 'output dir'
+```
+For End2End and Instruction:
+```
+python qag.py process_data --input_dir 'input dir' --output_dir 'output dir' --instruction_path 'instruction path'
 ```
 If you don't want to use our instruction set, you can customize it according to your preferences by modifying the instructions in [here](data/instructions.txt).
 
 ### Fine-tuning
+Fine-tuning Pipeline Model:
 ```
-comming soon
+coming soon
+```
+Fine-tuning Multitask Model:
+```
+coming soon
 ```
 <figure>
   <p align="center">
@@ -99,6 +110,10 @@ comming soon
 ### 🦙 Alpaca-LoRA LLMs
 ```
 comming soon
+```
+### Evaluation
+```
+coming soon
 ```
 ## ViQAG
 We introduce a demo application system ViQAG at [here](https://viqag.000webhostapp.com). The brief introduction of the system was also shown in a video ↓↓↓
