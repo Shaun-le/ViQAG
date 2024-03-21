@@ -87,7 +87,7 @@ coming soon
 ```
 Fine-tuning Multitask Model:
 ```
-coming soon
+python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example'
 ```
 <figure>
   <p align="center">
