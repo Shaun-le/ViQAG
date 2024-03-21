@@ -3,6 +3,7 @@ import json
 import os
 from tqdm import tqdm
 from datasets import Dataset
+import random
 
 SEP_TOKEN = " [SEP] "
 
@@ -10,6 +11,7 @@ class QAGDataProcessor:
     def __init__(self):
         self.input_dir: str = 'data/examples'
         self.output_dir: str = 'data/processed_data'
+        self.instruction_path: str = 'data/instructions.txt'
 
     def read_jsonl_file(self, file_path):
         contexts = []
@@ -40,11 +42,14 @@ class QAGDataProcessor:
             "test": Dataset.from_dict(test_data)
         }
 
-    def create_data(self, hf_data):
+    def create_data(self, hf_data, instruction_path):
         df = hf_data.to_pandas()
         output = []
+        with open(self.instruction_path, 'r') as f:
+            instructions = f.read().split('\n')
         for paragraph, g in df.groupby("context"):
             example = {
+                'instruction': random.choice(instructions),
                 'paragraph': paragraph.replace(SEP_TOKEN, " "),
                 'questions': [_g.replace(SEP_TOKEN, " ") for _g in g['question']],
                 'answers': [_g.replace(SEP_TOKEN, " ") for _g in g['answer']],
@@ -53,14 +58,15 @@ class QAGDataProcessor:
             output.append(example)
         return output
 
-    def process_data(self, input_dir='data/examples', output_dir='data'):
+    def process_data(self, input_dir='data/examples', output_dir='data', instruction_path='data/instructions.txt'):
         self.input_dir = input_dir
         self.output_dir = output_dir
+        self.instruction_path = instruction_path
 
         data = self.form(self.input_dir)
-        data_valid = self.create_data(data['validation'])
-        data_train = self.create_data(data['train'])
-        data_test = self.create_data(data['test'])
+        data_valid = self.create_data(data['validation'], self.instruction_path)
+        data_train = self.create_data(data['train'], self.instruction_path)
+        data_test = self.create_data(data['test'], self.instruction_path)
         data_all = {'train': data_train, 'validation': data_valid, 'test': data_test}
 
         os.makedirs(self.output_dir, exist_ok=True)
