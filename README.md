@@ -72,11 +72,11 @@ Please prepare your data in the `jsonl` format like our provided sample datasets
 
 For Pipeline and Multitask:
 ```
-python qg.py process_data --input_dir 'input dir' --output_dir 'output dir'
+python qg_data.py process_data --input_dir 'input dir' --output_dir 'output dir'
 ```
 For End2End and Instruction:
 ```
-python qag.py process_data --input_dir 'input dir' --output_dir 'output dir' --instruction_path 'instruction path'
+python qag_data.py process_data --input_dir 'input dir' --output_dir 'output dir' --instruction_path 'instruction path'
 ```
 If you don't want to use our instruction set, you can customize it according to your preferences by modifying the instructions in [here](data/instructions.txt).
 
@@ -87,7 +87,7 @@ coming soon
 ```
 Fine-tuning Multitask Model:
 ```
-coming soon
+python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example'
 ```
 <figure>
   <p align="center">
