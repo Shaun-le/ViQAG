@@ -116,7 +116,7 @@ comming soon
 coming soon
 ```
 ## ViQAG
-We introduce a demo application system ViQAG at [here](https://viqag.000webhostapp.com). The brief introduction of the system was also shown in a video ↓↓↓
+We introduce a demo application system ViQAG at [here](https://vnqag.000webhostapp.com). The brief introduction of the system was also shown in a video ↓↓↓
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=hIlQgg7ygQU" onclick="window.open(this.href); return false;"><img src="https://img.youtube.com/vi/hIlQgg7ygQU/0.jpg" alt="Alt Text" /></a>
