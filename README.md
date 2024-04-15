@@ -1,4 +1,4 @@
-# Vietnamese Question and Answer Generation: An Empirical Study
+# Towards Vietnamese Question and Answer Generation: An Empirical Study
 Question-answer generation is formulated as a text-generation task by using PLMs and LLMs. Given a context paragraph $C = \{s_{1}, s_{2}, ..., s_{n}\}$ with $\textit{n}$ sentences, QAG models are required to generate natural QA pairs $\mathcal{Q}$ = $\{(q_{1}, a_{1}), (q_{2}, a_{2}), ...\}$. Formally, QAG can be written as a conditional generation process as $\mathcal{Q} = f(Q|C, \theta)$, where $Q$ is the gold QA pairs in the training dataset, $C$ is the context, $f()$ is an encoder-decoder or a generative language model, and $\theta$ is the parameter of the model. The parameter $\theta$ can be learned by using encoder-decoder PLMs or generative LLMs.
 
 <figure>
@@ -116,7 +116,7 @@ comming soon
 coming soon
 ```
 ## ViQAG
-We introduce a demo application system ViQAG at [here](https://viqag.000webhostapp.com). The brief introduction of the system was also shown in a video ↓↓↓
+We introduce a demo application system ViQAG at [here](https://vnqag.000webhostapp.com). The brief introduction of the system was also shown in a video ↓↓↓
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=hIlQgg7ygQU" onclick="window.open(this.href); return false;"><img src="https://img.youtube.com/vi/hIlQgg7ygQU/0.jpg" alt="Alt Text" /></a>
