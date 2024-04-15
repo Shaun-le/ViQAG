@@ -6,6 +6,7 @@ const FileUploader = ({ selectedModel }) => {
   const [selectedOption, setSelectedOption] = useState("default");
   const [error, setError] = useState(null);
   const [showApiResponse, setShowApiResponse] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -36,13 +37,15 @@ const FileUploader = ({ selectedModel }) => {
   const handleSendData = async () => {
     try {
       setShowApiResponse(false);
-  
+      setLoading(true); // Bắt đầu loading
+
       // Kiểm tra nếu nội dung của file là rỗng
       if (fileContent.content.trim() === '') {
         setError("Please enter some text before generating.");
+        setLoading(false); // Dừng loading
         return; // Dừng việc gửi dữ liệu nếu textarea trống
       }
-  
+
       let selectedId = 0; // Default id if no option is selected
       if (selectedOption !== "default") {
         // Get the corresponding id for the selected option
@@ -61,32 +64,34 @@ const FileUploader = ({ selectedModel }) => {
             break;
         }
       }
-  
+
       // Prepare data to send
       const dataToSend = {
         name: selectedModel,
         id: selectedId,
         data: fileContent.content
       };
-  
+
       // Send data to API
-      const response = await fetch('https://2e65-113-160-133-144.ngrok-free.app/gen', {
+      const response = await fetch('https://8b11-113-160-133-144.ngrok-free.app/gen', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend),
       });
-  
+
       const result = await response.json();
       console.log('API response:', result);
-  
+
       setApiResponse(result.lowercase_data);
       setError(null);
       setShowApiResponse(true);
+      setLoading(false); // Dừng loading khi nhận được kết quả từ API
     } catch (error) {
       console.error('Error sending data to API:', error);
       setError("Error sending data to API. Please try again.");
+      setLoading(false); // Dừng loading nếu có lỗi
       setShowApiResponse(false);
     }
   };
@@ -127,13 +132,25 @@ const FileUploader = ({ selectedModel }) => {
       {error && <div className="text-red-500 mt-2">{error}</div>}
 
       <div className="mt-4 flex pt-10 items-center justify-center mx-auto col-start-1 row-start-3 self-center sm:mt-0 sm:col-start-2 sm:row-start-2 sm:row-span-2 lg:mt-6 lg:col-start-1 lg:row-start-3 lg:row-end-4">
-        <button
-          onClick={handleSendData}
-          type="button"
-          className="bg-indigo-600 hover:bg-blue-400 text-white text-sm leading-6 font-medium py-2 px-3 rounded-lg"
-        >
-          Generation
-        </button>
+        {/* Sử dụng biến loading để kiểm tra trạng thái loading và hiển thị button tương ứng */}
+        {loading ? (
+          <button
+            type="button"
+            className="bg-indigo-600 hover:bg-blue-400 text-white text-sm leading-6 font-medium py-2 px-3 rounded-lg"
+            disabled
+          >
+            
+            Processing...
+          </button>
+        ) : (
+          <button
+            onClick={handleSendData}
+            type="button"
+            className="bg-indigo-600 hover:bg-blue-400 text-white text-sm leading-6 font-medium py-2 px-3 rounded-lg"
+          >
+            Generation
+          </button>
+        )}
       </div>
 
       {apiResponse && showApiResponse && (

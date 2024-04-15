@@ -355,7 +355,7 @@ class TransformersQG:
                             batch_size: int = None,
                             num_beams: int = 4,
                             cache_path: str = None,
-                            splitting_symbol: str = '|',
+                            splitting_symbol: str = ' [SEP] ',
                             question_prefix: str = "question: ",
                             answer_prefix: str = ", answer: "):
         """ Generate question from paragraph and answer. Note that `list_answer` is needed unless they are already
