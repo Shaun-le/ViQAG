@@ -13,8 +13,8 @@ DATA_NEED_CUSTOM_REFERENCE = ['shnl/qg-example']
 def get_dataset(path: str = 'shnl/qg-example',
                 name: str = 'default',
                 split: str = 'train',
-                input_type: str = 'paragraph_answer',
-                output_type: str = 'question',
+                input_type: str = 'paragraph',
+                output_type: str = 'questions_answers',
                 use_auth_token: bool = False):
     """ Get question generation input/output list of texts. """
     name = None if name == 'default' else name
