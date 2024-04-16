@@ -155,5 +155,5 @@ class Evaluation:
                               if p is not None else "" for p in prediction]
                 assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
                 for i in range(len(prediction)):
-                    save_result(path=f'{self.export_dir}/{_file}.txt',
+                    save_result(path=f'{_file}.csv',
                                 result={'prediction': prediction[i], 'reference': gold_reference[i]})
