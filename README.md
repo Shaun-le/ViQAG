@@ -89,6 +89,10 @@ Fine-tuning Multitask Model:
 ```
 python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example'
 ```
+Fine-tuning End2End Model:
+```
+python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qag-example' --prefix_types 'qag' --input_types 'paragraph' --output_types 'questions_answers'
+```
 <figure>
   <p align="center">
     <img src="assets/Fine-tuning.png" alt="Fig.2">
