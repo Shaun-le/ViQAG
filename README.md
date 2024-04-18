@@ -97,7 +97,7 @@ python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qag-
   <p align="center">
     <img src="assets/Fine-tuning.png" alt="Fig.2">
   </p>
-  <p align="center"><strong>Fig.1: The system overview of fine-tuning and instruction fine-tuning QAG.</strong></p>
+  <p align="center"><strong>Fig.2: The fine tuning process that includes: pipeline, multitask, and end2end QAG models.</strong></p>
 </figure>
 
 ### Instruction-tuning
@@ -108,7 +108,7 @@ comming soon
   <p align="center">
     <img src="assets/Instruction-tuning.png" alt="Fig.3">
   </p>
-  <p align="center"><strong>Fig.1: The system overview of fine-tuning and instruction fine-tuning QAG.</strong></p>
+  <p align="center"><strong>Fig.3: The general pipeline of instruction-tuning for QAG.</strong></p>
 </figure>
 
 ### 🦙 Alpaca-LoRA LLMs
