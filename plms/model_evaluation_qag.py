@@ -154,8 +154,6 @@ class Evaluation:
                 prediction = [' [SEP] '.join([f"question: {q}, answer: {a}" for q, a in p])
                               if p is not None else "" for p in prediction]
                 assert len(prediction) == len(model_input), f"{len(prediction)} != {len(model_input)}"
-                with open(_file, 'w') as f:
-                    f.write('\n'.join(prediction))
-                for i in range(len(df)):
+                for i in range(len(prediction)):
                     save_result(path=f'{_file}.csv',
-                                result={'prediction': prediction[i], 'reference': df['questions_answers'][i]})
+                                result={'prediction': prediction[i], 'reference': gold_reference[i]})
