@@ -72,11 +72,11 @@ Please prepare your data in the `jsonl` format like our provided sample datasets
 
 For Pipeline and Multitask:
 ```
-python qg_data.py process_data --input_dir 'input dir' --output_dir 'output dir'
+python ./data/qg_data.py process_data --input_dir 'input dir' --output_dir 'output dir'
 ```
 For End2End and Instruction:
 ```
-python qag_data.py process_data --input_dir 'input dir' --output_dir 'output dir' --instruction_path 'instruction path'
+python ./data/qag_data.py process_data --input_dir 'input dir' --output_dir 'output dir' --instruction_path 'instruction path'
 ```
 If you don't want to use our instruction set, you can customize it according to your preferences by modifying the instructions in [here](data/instructions.txt).
 
