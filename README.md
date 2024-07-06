@@ -128,5 +128,11 @@ We introduce a demo application system ViQAG at [here](https://vnqag.000webhosta
 
 ## Citation
 ```
-Comming Soon!
+@article{pham2024towards,
+  title={Towards Vietnamese Question and Answer Generation: An Empirical Study},
+  author={Pham, Quoc-Hung and Le, Huu-Loi and Dang Nhat, Minh and Tran T, Khang and Tran-Tien, Manh and Dang, Viet-Hung and Vu, Huy-The and Nguyen, Minh-Tien and Phan, Xuan-Hieu},
+  journal={ACM Transactions on Asian and Low-Resource Language Information Processing},
+  year={2024},
+  publisher={ACM New York, NY}
+}
 ```
