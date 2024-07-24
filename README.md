@@ -20,7 +20,11 @@ To install dependencies, run:
 pip install -r requirements.txt
 ```
 
-## Question and Answers Generation
+## Questions Generation
+
+## Answers Generation
+
+## Question and Answer Generation
 - **Generate QAG with Pipeline Models:** The pipeline model operates in two distinct stages for Question Answer Generation (QAG): answer extraction/generation (AE) and question generation (QG). In the initial phase, the model takes an input paragraph context $C$ and produces a corresponding answer $\bar{a}$ through extraction or generation. Subsequently, leveraging the obtained answer $\bar{a}$ along with the context $C$, the model generates the question $\bar{q}$. Since the Pipeline trains independent AE and QG models, they need to be handled separately. The models are referred to as ```model``` and ```model_ae```, representing QG and AE models, respectively.
 ```python
 from plms.language_model import TransformersQG
