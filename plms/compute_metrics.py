@@ -11,7 +11,12 @@ class Evaluate:
                  result_file: str = ''):
         self.result_file = result_file
     def compute_metrics(self):
-        df = pd.read_csv(self.result_file)
+        if self.result_file.endswith('.csv'):
+            df = pd.read_csv(self.result_file)
+        elif self.result_file.endswith('.json'):
+            df = pd.read_json(self.result_file)
+        else:
+            raise ValueError("Unsupported file format. Please provide a .csv or .json file.")
         predictions, references = [], []
         for i in range(len(df)):
             predictions.append(str(df['prediction'][i]))
