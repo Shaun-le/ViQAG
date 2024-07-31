@@ -32,9 +32,9 @@ input = 'Lê Lợi sinh ra trong một gia đình hào trưởng tại Thanh Hó
         'Thời gian đầu ông hoạt động ở vùng thượng du Thanh Hóa, quân Minh đã huy động lực lượng tới hàng vạn quân để đàn áp,' \
         'nhưng bằng chiến thuật trốn tránh hoặc sử dụng chiến thuật phục kích và hòa hoãn, nghĩa quân Lam Sơn đã dần lớn mạnh.'
 
-pred = model.generate_qa(input)
+qa = model.generate_qa(input)
 
-print(pred)
+print(qa)
 
 [
   ('Quân Minh đã sử dụng chiến thuật nào để đánh quân vào vùng thượng du Thanh Hóa?','huy động lực lượng tới hàng vạn quân')
@@ -54,9 +54,9 @@ input = 'Lê Lợi sinh ra trong một gia đình hào trưởng tại Thanh Hó
         'Thời gian đầu ông hoạt động ở vùng thượng du Thanh Hóa, quân Minh đã huy động lực lượng tới hàng vạn quân để đàn áp,' \
         'nhưng bằng chiến thuật trốn tránh hoặc sử dụng chiến thuật phục kích và hòa hoãn, nghĩa quân Lam Sơn đã dần lớn mạnh.'
 
-pred = model.generate_qa(input)
+qa = model.generate_qa(input)
 
-print(pred)
+print(qa)
 
 [
   ('Lê Lợi sinh ra trong hoàn cảnh nào?', 'một gia đình hào trưởng'),
@@ -67,7 +67,48 @@ print(pred)
 
 - **QG Only:**
 
+```
+from plms.language_model import TransformersQG
+model = TransformersQG(model='namngo/pipeline-vit5-viquad-qg')
+
+context = [
+    'Năm 1418, Lê Lợi tổ chức cuộc khởi nghĩa Lam Sơn với lực lượng ban đầu chỉ khoảng vài nghìn người.',
+    'Năm 1418, Lê Lợi tổ chức cuộc khởi nghĩa Lam Sơn với lực lượng ban đầu chỉ khoảng vài nghìn người.'
+]
+
+answer = [
+    'Năm 1418',
+    'khoảng vài nghìn người'
+]
+
+question = model.generate_q(list_context=context, list_answer=answer)
+print(question)
+
+[
+'Cuộc khởi nghĩa Lam Sơn nổ ra vào năm nào?',
+'Lực lượng ban đầu của cuộc khởi nghĩa Lam Sơn gồm bao nhiêu người?'
+]
+```
+
 - **AE Only**
+```
+from plms.language_model import TransformersQG
+model = TransformersQG(model='namngo/pipeline-vit5-viquad-ae')
+
+context = 'Lê Lợi sinh ra trong một gia đình hào trưởng tại Thanh Hóa, trưởng thành trong thời kỳ Nhà Minh đô hộ nước Việt.' \
+          'Thời bấy giờ có nhiều cuộc khởi nghĩa của người Việt nổ ra chống lại quân Minh nhưng đều thất bại.' \
+          'Năm 1418, Lê Lợi tổ chức cuộc khởi nghĩa Lam Sơn với lực lượng ban đầu chỉ khoảng vài nghìn người.' \
+
+answer = model.generate_a(context)
+
+print(answer)
+
+[
+'Lê Lợi',
+'nhiều cuộc khởi nghĩa của người Việt nổ ra chống lại quân Minh',
+'tổ chức cuộc khởi nghĩa Lam Sơn'
+]
+```
 
 ## Models Development
 
@@ -85,15 +126,20 @@ python ./data/qag_data.py process_data --input_dir 'input dir' --output_dir 'out
 If you don't want to use our instruction set, you can customize it according to your preferences by modifying the instructions in [here](data/instructions.txt).
 
 ### Fine-tuning
-Fine-tuning Pipeline Model:
+Fine-tuning Pipeline Model: The pipeline model designed for QAG consists of two main steps: answer extraction/generation (AE) and question generation (QG). In the first step, the model takes an input paragraph context \( C \) and extracts or generates the corresponding answer \( \bar{a} \). In the second step, the model uses the obtained answer \( \bar{a} \) along with the context \( C \) to form the new input for the question generation process \( \bar{q} \). Each step utilizes a separate model.
 ```
-coming soon
+#AE
+python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example' \
+                             --input_types 'paragraph_sentence' --output_types 'answer' --prefix_types 'ae'
+#QG
+!python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example' \
+                             --input_types 'paragraph_answer' --output_types 'question' --prefix_types 'qg'
 ```
-Fine-tuning Multitask Model:
+Fine-tuning Multitask Model: For training the multitask model, the training instances of AE and QG are mixed together and in each iteration of fine-tuning, a batch of samples is selected. The model uses the prefix: "answer extraction" (AE) and "generate question" (QG) added at the beginning of an input text to distinguish each subtask.
 ```
 python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example'
 ```
-Fine-tuning End2End Model:
+Fine-tuning End2End Model: Instead of dividing QAG into separate components, namely AE and QG, we can streamline the generation process by directly producing pairs of questions and answers. This task involves generating a set of QA pairs using the input context \( C \) and simultaneously creating the corresponding \( n \) gold QA pairs \( Q \).
 ```
 python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qag-example' --prefix_types 'qag' --input_types 'paragraph' --output_types 'questions_answers'
 ```
@@ -121,7 +167,7 @@ comming soon
 ```
 ### Evaluation
 ```
-coming soon
+python evaluation.py evaluate --result_path 'result.json'
 ```
 ## ViQAG
 We introduce a demo application system ViQAG at [here](https://vnqag.000webhostapp.com). The brief introduction of the system was also shown in a video ↓↓↓
