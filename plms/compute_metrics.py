@@ -19,8 +19,8 @@ class Evaluate:
             raise ValueError("Unsupported file format. Please provide a .csv or .json file.")
         predictions, references = [], []
         for i in range(len(df)):
-            predictions.append(str(df['predictions'][i]))
-            references.append(str(df['references'][i]))
+            predictions.append(str(df['prediction'][i]))
+            references.append(str(df['reference'][i]))
         refs = post_process(references)
         preds = post_process(predictions)
 
