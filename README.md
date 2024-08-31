@@ -10,13 +10,13 @@ Question-answer generation is formulated as a text-generation task by using PLMs
 
 ## Usage
 ### Install
-```
+```python
 git clone https://github.com/Shaun-le/ViQAG.git
 cd ViQAG
 ```
 ### Prerequisite
 To install dependencies, run:
-```
+```python
 pip install -r requirements.txt
 ```
 
@@ -67,7 +67,7 @@ print(qa)
 
 - **QG Only:**
 
-```
+```python
 from plms.language_model import TransformersQG
 model = TransformersQG(model='namngo/pipeline-vit5-viquad-qg')
 
@@ -91,7 +91,7 @@ print(question)
 ```
 
 - **AE Only**
-```
+```python
 from plms.language_model import TransformersQG
 model = TransformersQG(model='namngo/pipeline-vit5-viquad-ae')
 
@@ -115,19 +115,19 @@ print(answer)
 ### Data
 Please prepare your data in the `jsonl` format like our provided sample datasets, we'll take care of the rest, just execute the following command:
 
-For Pipeline and Multitask:
-```
+**For Pipeline and Multitask:**
+```python
 python ./data/qg_data.py process_data --input_dir 'input dir' --output_dir 'output dir'
 ```
-For End2End and Instruction:
-```
+**For End2End and Instruction:**
+```python
 python ./data/qag_data.py process_data --input_dir 'input dir' --output_dir 'output dir' --instruction_path 'instruction path'
 ```
 If you don't want to use our instruction set, you can customize it according to your preferences by modifying the instructions in [here](data/instructions.txt).
 
 ### Fine-tuning
-Fine-tuning Pipeline Model: The pipeline model designed for QAG consists of two main steps: answer extraction/generation (AE) and question generation (QG). In the first step, the model takes an input paragraph context \( C \) and extracts or generates the corresponding answer \( \bar{a} \). In the second step, the model uses the obtained answer \( \bar{a} \) along with the context \( C \) to form the new input for the question generation process \( \bar{q} \). Each step utilizes a separate model.
-```
+**Fine-tuning Pipeline Model:** The pipeline model designed for QAG consists of two main steps: answer extraction/generation (AE) and question generation (QG). In the first step, the model takes an input paragraph context $C$ and extracts or generates the corresponding answer $\bar{a}$. In the second step, the model uses the obtained answer $\bar{a}$ along with the context $C$ to form the new input for the question generation process $\bar{q}$. Each step utilizes a separate model.
+```python
 #AE
 python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example' \
                              --input_types 'paragraph_sentence' --output_types 'answer' --prefix_types 'ae'
@@ -135,12 +135,12 @@ python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-e
 !python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example' \
                              --input_types 'paragraph_answer' --output_types 'question' --prefix_types 'qg'
 ```
-Fine-tuning Multitask Model: For training the multitask model, the training instances of AE and QG are mixed together and in each iteration of fine-tuning, a batch of samples is selected. The model uses the prefix: "answer extraction" (AE) and "generate question" (QG) added at the beginning of an input text to distinguish each subtask.
-```
+**Fine-tuning Multitask Model:** For training the multitask model, the training instances of AE and QG are mixed together and in each iteration of fine-tuning, a batch of samples is selected. The model uses the prefix: "answer extraction" (AE) and "generate question" (QG) added at the beginning of an input text to distinguish each subtask.
+```python
 python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qg-example'
 ```
-Fine-tuning End2End Model: Instead of dividing QAG into separate components, namely AE and QG, we can streamline the generation process by directly producing pairs of questions and answers. This task involves generating a set of QA pairs using the input context \( C \) and simultaneously creating the corresponding \( n \) gold QA pairs \( Q \).
-```
+**Fine-tuning End2End Model:** Instead of dividing QAG into separate components, namely AE and QG, we can streamline the generation process by directly producing pairs of questions and answers. This task involves generating a set of QA pairs using the input context $C$ and simultaneously creating the corresponding $n$ gold QA pairs $Q$.
+```python
 python train.py fine-tuning --model 'VietAI/vit5-base' --dataset_path 'shnl/qag-example' --prefix_types 'qag' --input_types 'paragraph' --output_types 'questions_answers'
 ```
 <figure>
@@ -166,7 +166,7 @@ comming soon
 comming soon
 ```
 ### Evaluation
-```
+```python
 python evaluation.py evaluate --result_path 'result.json'
 ```
 ## ViQAG
