@@ -248,7 +248,7 @@ class Trainer:
     def train_single_epoch(self, data_loader, global_step: int, interval):
         total_loss = []
         self.optimizer.zero_grad()
-        for n, encode in enumerate(data_loader):
+        for n, encode in tqdm(enumerate(data_loader)):
 
             # gc.collect()
             # torch.cuda.empty_cache()
