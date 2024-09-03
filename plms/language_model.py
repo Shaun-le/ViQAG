@@ -7,7 +7,7 @@ from itertools import chain
 from typing import List, Dict
 from multiprocessing import Pool
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 import torch
 from torch.nn import functional
 import transformers

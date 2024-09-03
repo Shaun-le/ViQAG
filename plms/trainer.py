@@ -8,7 +8,7 @@ from os.path import join as pj
 from glob import glob
 from typing import List
 import torch
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 from .language_model import TransformersQG
 from .data import get_dataset, DEFAULT_CACHE_DIR
