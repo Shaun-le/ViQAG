@@ -1,7 +1,7 @@
 import fire
 import json
 import os
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 from datasets import Dataset
 import random
 

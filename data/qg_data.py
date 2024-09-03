@@ -2,7 +2,7 @@ import json
 import os
 import re
 from glob import glob
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 from typing import Dict
 import spacy
 import fire
