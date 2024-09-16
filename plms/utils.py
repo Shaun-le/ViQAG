@@ -79,8 +79,7 @@ class MetricsCalculator:
         return result
 
     def rouge(self, predict, goal):
-        result = [{k: (v.mid.fmeasure) * 100} for k, v in
-                   self.rouge_metrics.compute(predictions=predict, references=goal).items()]
+        result = self.rouge_metrics.compute(predictions=predict, references=goal)
         return result
 
     def meteor(self, predict, goal):
