@@ -6,7 +6,7 @@ from nltk.translate.bleu_score import sentence_bleu
 import spacy
 import evaluate
 import numpy as np
-from datasets import load_metric
+#from datasets import load_metric
 
 def save_result(path: str, result: dict[str, str]):
     file_mode = 'a' if os.path.exists(path) else 'w'
@@ -55,7 +55,7 @@ def post_process(refs_or_preds: list[str]):
 class MetricsCalculator:
     def __init__(self):
         self.nlp = spacy.load('vi_core_news_lg')
-        self.rouge_metrics = load_metric('rouge')
+        self.rouge_metrics = evaluate.load('rouge')
         self.meteor_metrics = evaluate.load('meteor')
         self.bert_score = evaluate.load('bertscore')
 
